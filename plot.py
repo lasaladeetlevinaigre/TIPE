@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import csv
 
@@ -18,30 +19,31 @@ def read_csv(path):
                 tp2 = float(line[1])
                 dt = float(line[2])
                 nb = int(line[3])
-                reussite = int(line[4))
+                reussite = int(line[4])
             else :
                 x.append(float(line[0]))
                 y.append(float(line[1]))
                 z.append(float(line[2]))
                 t.append(float(line[3]))
-    return x, y, z, t1, t2, dt
+    return x, y, z, t, tp1, tp2, dt, nb, reussite
 
 path = "./data.csv"
 
 x, y, z, t, tp1, tp2, dt, nb, reussite = read_csv(path)
 
-
+"""
 t1 = np.linspace(0, tp1, tp1/dt)
 t2 = np.linspace(tp1, tp2, (tp2-tp1)/dt)
-t3 = np.linspace(tp2, t[nb-1], 
+t3 = np.linspace(tp2, t[nb-1], (t[nb-1]-tp2)/dt)
 
-
+t1 = [t*dt for t in range(0, int(tp1/dt))]
+t2 = [t*dt for t in range(int(tp1/dt), int( (tp2)/dt ))]
+t3 = [t*dt for t in range(int(tp2/dt), int((t[nb-1]-tp2)/dt))]
+"""
 
 # Graphe des coordonnées x
 plt.subplot(131)
-plt.plot(t1, x1, label="Partie 1")
-plt.plot(t2, x2, label="Partie 2")
-plt.plot(t3, x3, label="Partie 3")
+plt.plot(t, x, label="Partie 1")
 plt.xlabel("Temps (s)")
 plt.ylabel("Coordonnée x")
 plt.title("Trajectoire en x")
@@ -49,9 +51,7 @@ plt.legend()
 
 # Graphe des coordonnées y
 plt.subplot(132)
-plt.plot(t1, y1, label="Partie 1")
-plt.plot(t2, y2, label="Partie 2")
-plt.plot(t3, y3, label="Partie 3")
+plt.plot(t, y, label="Partie 1")
 plt.xlabel("Temps (s)")
 plt.ylabel("Coordonnée y")
 plt.title("Trajectoire en y")
@@ -59,12 +59,20 @@ plt.legend()
 
 # Graphe des coordonnées z
 plt.subplot(133)
-plt.plot(t1, z1, label="Partie 1")
-plt.plot(t2, z2, label="Partie 2")
-plt.plot(t3, z3, label="Partie 3")
+plt.plot(t, z, label="Partie 1")
 plt.xlabel("Temps (s)")
-plt.ylabel("Coord")
+plt.ylabel("Coordonnée z")
 plt.title("Trajectoire en z")
 plt.legend()
 
+plt.show()
+
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+ax.plot(x, y, z)
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+plt.title("Trajectoire de la balle contre un mur perpendiculaire")
 plt.show()
