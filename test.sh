@@ -1,3 +1,4 @@
+rm data.csv
 gcc engine.c -o engine -Wall -g -lm
 ./engine
 rm engine
