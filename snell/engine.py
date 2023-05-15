@@ -92,7 +92,7 @@ class ComputeTrajectory:
             if t > self.t_max:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO] Temps écoulé{bcolors.ENDC}")
-                return 0
+                return False
 
             if z <= 0:
                 if self.print_step:
@@ -100,12 +100,13 @@ class ComputeTrajectory:
                 self.t_rebond1 = t
                 self.x_rebond1 = x
                 self.y_rebond1 = y
-                return 1
+                z = 0 # Evite les valeurs négatives
+                return True
 
             if x >= self.largeur_terrain or x <= 0:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO] La balle sort du terrain par les côtés{bcolors.ENDC}")
-                return 0
+                return False
 
             if y >= self.y_mur1:
                 if self.print_step:
@@ -114,7 +115,7 @@ class ComputeTrajectory:
                 self.y_tab.append(y)
                 self.z_tab.append(z)
                 self.t_tab.append(t)
-                return 0
+                return False
 
             self.x_tab.append(x)
             self.y_tab.append(y)
@@ -125,7 +126,7 @@ class ComputeTrajectory:
             i = i + 1
 
     def part2(self):
-        t = self.t_rebond1 + self.dt
+        t = self.t_rebond1
 
         while True:
             x = self.v0[0] * t + self.x0
@@ -144,12 +145,12 @@ class ComputeTrajectory:
                 self.y_tab.append(y)
                 self.z_tab.append(z)
                 self.t_tab.append(t)
-                return 0
+                return False
 
             if t > self.t_max:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO] Temps écoulé{bcolors.ENDC}")
-                return 0
+                return False
 
             if y >= self.y_mur1:
                 if self.print_step:
@@ -158,7 +159,7 @@ class ComputeTrajectory:
                 self.x_rebond2 = x
                 self.y_rebond2 = y
                 self.z_rebond2 = z
-                return 1
+                return True
 
             self.x_tab.append(x)
             self.y_tab.append(y)
@@ -168,7 +169,7 @@ class ComputeTrajectory:
             t = t + self.dt
 
     def part3(self):
-        t = self.t_rebond2 + self.dt
+        t = self.t_rebond2
 
         while True:
             x = self.v0[0] * t + self.x0
@@ -183,7 +184,7 @@ class ComputeTrajectory:
             if t > self.t_max:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO] Temps écoulé{bcolors.ENDC}")
-                return 0
+                return False
 
             if z <= 0:
                 if self.print_step:
@@ -192,7 +193,7 @@ class ComputeTrajectory:
                 self.y_tab.append(y)
                 self.z_tab.append(z)
                 self.t_tab.append(t)
-                return 0
+                return False
 
             if x >= self.x_mur2 and z >= self.z_mur2:
                 if self.print_step:
@@ -202,7 +203,7 @@ class ComputeTrajectory:
                 self.x_rebond3 = x
                 self.y_rebond3 = y
                 self.z_rebond3 = z
-                return 1
+                return True
 
             self.x_tab.append(x)
             self.y_tab.append(y)
@@ -212,12 +213,10 @@ class ComputeTrajectory:
             t = t + self.dt
 
     def compute_trajectory(self):
-        if not self.part1():
-            return False
-        if not self.part2():
-            return False
-        if not self.part3():
+        if self.part1() and self.part2() and self.part3():
             return True
+        else:
+            return False
 
     def get_trajectory(self):
         if self.print_tab == True:
@@ -232,27 +231,24 @@ class ComputeTrajectory:
 
 """
 params = {
-    'dt': 0.01,
     't_max': 8,
-    'g': 9.81,
+    'print_tab': False,
+    'print_step': False,
+    'largeur_terrain': largeur_terrain,
+    'longueur_terrain': longueur_terrain,
     'e1': 1.6,
     'e2': 1.6,
-
-    'largeur_terrain': 8,
-    'longueur_terrain': 20,
     'hauteur_mur1': 3,
     'hauteur_mur2': 2,
-    'print_tab': False,
 
-    'theta': 80,
     'alpha': 90,
-
+    'theta': 80,
+    
     'x0': 2,
     'y0': 2,
     'h0': 2.3,
 
     'v0_norme': [20, 20, 20],
-
 }
 
 trajectory = ComputeTrajectory(params)
