@@ -171,6 +171,7 @@ class ComputeTrajectory:
     def part3(self):
         t = self.t_rebond2
 
+        reussite = False
         while True:
             x = self.v0[0] * t + self.x0
             y = -(self.v0[1] * t + self.y0) + 2*self.y_rebond2
@@ -184,7 +185,7 @@ class ComputeTrajectory:
             if t > self.t_max:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO] Temps écoulé{bcolors.ENDC}")
-                return False
+                return reussite
 
             if z <= 0:
                 if self.print_step:
@@ -193,7 +194,16 @@ class ComputeTrajectory:
                 self.y_tab.append(y)
                 self.z_tab.append(z)
                 self.t_tab.append(t)
-                return False
+                return reussite
+
+            if x >= self.x_mur2 and z <= self.z_mur2:
+                if self.print_step:
+                    print(f"{bcolors.FAIL}[NO] La balle frappe le mur2{bcolors.ENDC}")
+                self.x_tab.append(x)
+                self.y_tab.append(y)
+                self.z_tab.append(z)
+                self.t_tab.append(t)
+                return reussite                
 
             if x >= self.x_mur2 and z >= self.z_mur2:
                 if self.print_step:
@@ -203,7 +213,7 @@ class ComputeTrajectory:
                 self.x_rebond3 = x
                 self.y_rebond3 = y
                 self.z_rebond3 = z
-                return True
+                reussite = True
 
             self.x_tab.append(x)
             self.y_tab.append(y)
