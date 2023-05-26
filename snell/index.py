@@ -38,12 +38,15 @@ def generate_random_params(num_params):
 
 
 
-ploting = True
-num_params = 25
+num_params = 20
 
 params_tab = generate_random_params(num_params)
 ts, xs, ys, zs, vs, reussite_tab, color_tab = compute_multiple_trajectories(params_tab)
 
+if num_params > 75:
+    ploting = False
+else:
+    ploting = True
 
 # Pourcentages
 ok = 0
@@ -64,4 +67,4 @@ print(f"{bcolors.FAIL}Pourcentage d'échec     : {no/(ok+no)*100:05.2f}% ({no}/{
 
 # Courbes
 if ploting:
-    plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_terrain)
+    plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_terrain, False)
