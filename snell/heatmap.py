@@ -5,6 +5,17 @@ import numpy as np
 from ploting import compute_multiple_trajectories, plot
 from matplotlib import colors
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 
 largeur_terrain = 10 #m
 longueur_terrain = 20 #m
@@ -17,36 +28,30 @@ longueur_heatmap = 20
 pas_distance = 1#m
 
 
-def get_params_tab(x, y):
+nb_alphas = 20
+nb_thetas = 20
+def get_params_tab(x, y):   
     params_tab = []
 
-    interval_alpha = [85, 110] #ex : [80, 140]
-    pas_alpha = 5              #ex : 5
-    alphas = [interval_alpha[0] + pas_alpha*i for i in range( round((interval_alpha[1]-interval_alpha[0])/pas_alpha)+1 )]
-    #ex t: [80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140]
+    alphas = np.linspace(40, 160, nb_alphas)
+    thetas = np.linspace(0, 180, nb_thetas)
 
-    interval_theta = [30, 85] #ex : [80, 140]
-    pas_theta = 5              #ex : 5
-    thetas = [interval_theta[0] + pas_theta*i for i in range( round((interval_theta[1]-interval_theta[0])/pas_theta)+1 )]
-    #ex t: [80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140]
-
-
-
-    for i in range( len(alphas) ):
-        for j in range( len(thetas) ):
+    for alpha in alphas:
+        for theta in thetas:
             params = {
                 't_max': 10,
                 'print_tab': False,
                 'print_step': False,
                 'largeur_terrain': largeur_terrain,
                 'longueur_terrain': longueur_terrain,
+                'hauteur_filet': 0.9,
                 'e1': 0.7,
                 'e2': 0.7,
                 'hauteur_mur1': 3,
                 'hauteur_mur2': 2,
 
-                'alpha': alphas[i],
-                'theta': thetas[j],
+                'alpha': alpha,
+                'theta': theta,
                 
                 'x0': x,
                 'y0': y,
@@ -89,40 +94,45 @@ def compute_single_trajectory(param):
 
     return reussite
 
-
-
-def get_probability(x, y):
+def get_probability(x, y, nb_rays_succ):
     params_tab = get_params_tab(x, y)
 
     somme = 0
     i = 0
     for param in params_tab:
         if compute_single_trajectory(param):
+            nb_rays_succ = nb_rays_succ + 1
             somme = somme + 1
         i = i + 1
 
-    return round((somme/i)*100)/100
+    return (round((somme/i)*100)/100, nb_rays_succ)
 
 
 
 # matrices heatmap
 heat_map = [ [ -1 for j in range(round(largeur_heatmap/pas_distance)) ] for i in range(round(longueur_heatmap/pas_distance)) ]
 
+nb_rays_succ = 0
 for i in range(len(heat_map)):
     for j in range(len(heat_map[i])):
-        pass
-        heat_map[i][j] = get_probability(i*pas_distance, j*pas_distance)
+        heat_map[i][j], nb_rays_succ = get_probability(i*pas_distance, j*pas_distance, nb_rays_succ)
 
+
+
+
+nb_rays = nb_alphas * nb_thetas * round(largeur_heatmap/pas_distance) * round(longueur_heatmap/pas_distance)
+print(f"{bcolors.OKCYAN}Résultats pour [v0:{v0}, h0:{h0}]{bcolors.ENDC}")
+print(f"{bcolors.OKCYAN}Nombre de lancés : {nb_rays} dont {nb_rays_succ} succès{bcolors.ENDC}")
 
 
 # Conversion du tableau en tableau NumPy
 heat_map_np = np.array(heat_map)
 
+plt.imshow(heat_map_np, cmap='hot', interpolation='none')
+#plt.imshow(heat_map_np, cmap='hot', interpolation='bicubic')
 
-# Création de la heatmap avec Matplotlib
-plt.imshow(heat_map_np, cmap='hot', interpolation='bicubic')
-
-# Inversion de l'axe y
+# Inversion des axes
+plt.gca().invert_xaxis()
 plt.gca().invert_yaxis()
 
 # Ajustement de la légende de l'axe X

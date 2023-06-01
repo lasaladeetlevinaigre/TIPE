@@ -14,22 +14,23 @@ def generate_random_params(num_params):
         params = {
             't_max': 8,
             'print_tab': False,
-            'print_step': False,
+            'print_step': True,
             'largeur_terrain': largeur_terrain,
             'longueur_terrain': longueur_terrain,
+            'hauteur_filet': 0.9,
             'e1': 0.7,
             'e2': 0.7,
             'hauteur_mur1': 3,
             'hauteur_mur2': 2,
 
-            'alpha': random.uniform(70, 110),
-            'theta': 70,
+            'alpha': 122.105,
+            'theta': 85.263,
             
-            'x0': 2,
-            'y0': 2,
+            'x0': 9,
+            'y0': 9,
             'h0': 2.3,
 
-            'v0_norme': [20, 20, 20],
+            'v0_norme': [13, 13, 13],
         }
 
         params_tab.append(params)
@@ -38,7 +39,7 @@ def generate_random_params(num_params):
 
 
 
-num_params = 20
+num_params = 1
 
 params_tab = generate_random_params(num_params)
 ts, xs, ys, zs, vs, reussite_tab, color_tab = compute_multiple_trajectories(params_tab)

@@ -34,6 +34,8 @@ class ComputeTrajectory:
         self.longueur_terrain = params['longueur_terrain']
         self.hauteur_mur1 = params['hauteur_mur1']
         self.hauteur_mur2 = params['hauteur_mur2']
+        self.y_filet = params['longueur_terrain']/2
+        self.hauteur_filet = params['hauteur_filet']
         self.e1 = params['e1']
         self.e2 = params['e2']
 
@@ -89,10 +91,35 @@ class ComputeTrajectory:
             if z >= self.zmax:
                 self.zmax = z
 
+
             if t > self.t_max:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO] Temps écoulé{bcolors.ENDC}")
+                    print(f"{bcolors.FAIL}[NO TEMPS] Temps écoulé{bcolors.ENDC}")
                 return False
+
+            if x >= self.largeur_terrain or x <= 0:
+                if self.print_step:
+                    print(f"{bcolors.FAIL}[NO DEHOR] La balle sort du terrain par les côtés{bcolors.ENDC}")
+                return False
+
+
+            if z <= 0 and y <= self.y_filet:
+                if self.print_step:
+                    print(f"{bcolors.FAIL}[NO FILET] La balle touche le sol devant le filet{bcolors.ENDC}")
+                return False
+
+            precision_filet = 0.1
+            if abs(y-self.y_filet) <= precision_filet and z <= self.hauteur_filet:
+                #print("NIVEAU FILET (y:%0.4f" % y, " z:%0.4f" % z, ")")
+                if self.print_step:
+                    print(f"{bcolors.FAIL}[NO FILET] La balle tape dans le filet{bcolors.ENDC}")
+                return False
+
+            if y >= self.y_mur1:
+                if self.print_step:
+                    print(f"{bcolors.FAIL}[NO DEHOR] La balle passe le mur1 avant le sol{bcolors.ENDC}")
+                return False
+
 
             if z <= 0:
                 if self.print_step:
@@ -100,22 +127,7 @@ class ComputeTrajectory:
                 self.t_rebond1 = t
                 self.x_rebond1 = x
                 self.y_rebond1 = y
-                z = 0 # Evite les valeurs négatives
                 return True
-
-            if x >= self.largeur_terrain or x <= 0:
-                if self.print_step:
-                    print(f"{bcolors.FAIL}[NO] La balle sort du terrain par les côtés{bcolors.ENDC}")
-                return False
-
-            if y >= self.y_mur1:
-                if self.print_step:
-                    print(f"{bcolors.FAIL}[NO] La balle frappe le mur1 avant le sol{bcolors.ENDC}")
-                self.x_tab.append(x)
-                self.y_tab.append(y)
-                self.z_tab.append(z)
-                self.t_tab.append(t)
-                return False
 
             self.x_tab.append(x)
             self.y_tab.append(y)
@@ -140,16 +152,12 @@ class ComputeTrajectory:
 
             if z >= self.z_mur1:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO] La balle passe au-dessus du mur1{bcolors.ENDC}")
-                self.x_tab.append(x)
-                self.y_tab.append(y)
-                self.z_tab.append(z)
-                self.t_tab.append(t)
+                    print(f"{bcolors.FAIL}[NO DEHOR] La balle passe au-dessus du mur1{bcolors.ENDC}")
                 return False
 
             if t > self.t_max:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO] Temps écoulé{bcolors.ENDC}")
+                    print(f"{bcolors.FAIL}[NO TEMPS] Temps écoulé{bcolors.ENDC}")
                 return False
 
             if y >= self.y_mur1:
@@ -184,35 +192,23 @@ class ComputeTrajectory:
 
             if t > self.t_max:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO] Temps écoulé{bcolors.ENDC}")
+                    print(f"{bcolors.FAIL}[NO TEMPS] Temps écoulé{bcolors.ENDC}")
                 return reussite
 
             if z <= 0:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO] La balle tombe avant de passer le mur2{bcolors.ENDC}")
-                self.x_tab.append(x)
-                self.y_tab.append(y)
-                self.z_tab.append(z)
-                self.t_tab.append(t)
+                    print(f"{bcolors.FAIL}[NO DEHOR] La balle tombe avant de passer le mur2{bcolors.ENDC}")
                 return reussite
 
-            if x >= self.x_mur2 and z <= self.z_mur2:
+            if (x >= self.x_mur2 or x <= 0) and z <= self.z_mur2:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO] La balle frappe le mur2{bcolors.ENDC}")
-                self.x_tab.append(x)
-                self.y_tab.append(y)
-                self.z_tab.append(z)
-                self.t_tab.append(t)
+                    print(f"{bcolors.FAIL}[NO DEHOR] La balle frappe le mur2{bcolors.ENDC}")
                 return reussite                
 
             if x >= self.x_mur2 and z >= self.z_mur2:
-                if self.print_step:
+                if self.print_step and reussite == False:
                     print("[RB] Passe au-dessus mur2 à %0.4f" % t, "sec")
                     print(f"{bcolors.OKGREEN}[OK] Réussite !{bcolors.ENDC}")
-                self.t_rebond3 = t
-                self.x_rebond3 = x
-                self.y_rebond3 = y
-                self.z_rebond3 = z
                 reussite = True
 
             self.x_tab.append(x)
@@ -224,6 +220,7 @@ class ComputeTrajectory:
 
     def compute_trajectory(self):
         if self.part1() and self.part2() and self.part3():
+            print(f"{bcolors.OKGREEN}[OK] x:{self.params['x0']} y:{self.params['y0']} alpha:{self.params['alpha']} theta:{self.params['theta']}{bcolors.ENDC}")
             return True
         else:
             return False
