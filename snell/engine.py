@@ -220,7 +220,7 @@ class ComputeTrajectory:
 
     def compute_trajectory(self):
         if self.part1() and self.part2() and self.part3():
-            print(f"{bcolors.OKGREEN}[OK] x:{self.params['x0']} y:{self.params['y0']} alpha:{self.params['alpha']} theta:{self.params['theta']}{bcolors.ENDC}")
+            #print(f"{bcolors.OKGREEN}[OK] x:{self.params['x0']} y:{self.params['y0']} alpha:{self.params['alpha']:05.3f} theta:{self.params['theta']:05.3f}{bcolors.ENDC}")
             return True
         else:
             return False
