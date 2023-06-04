@@ -57,13 +57,12 @@ def compute_multiple_trajectories(params_tab):
 
 
 
-def plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_terrain, only_sucess = True):
-
+def plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_terrain, display_only_sucess = True):
 	fig = plt.figure(figsize=(14, 4))
 	# Graphe des coordonnées x
 	plt.subplot(131)
 	for i in range(len(ts)):
-		if (only_sucess and reussite_tab[i]) or only_sucess == False:
+		if (display_only_sucess and reussite_tab[i]) or display_only_sucess == False:
 			t = ts[i]
 			x = xs[i]
 			plt.plot(t, x, label=i)
@@ -76,7 +75,7 @@ def plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_
 	# Graphe des coordonnées y
 	plt.subplot(132)
 	for i in range(len(ts)):
-		if (only_sucess and reussite_tab[i]) or only_sucess == False:
+		if (display_only_sucess and reussite_tab[i]) or display_only_sucess == False:
 			t = ts[i]
 			y = ys[i]
 			plt.plot(t, y)
@@ -89,7 +88,7 @@ def plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_
 	# Graphe des coordonnées z
 	plt.subplot(133)
 	for i in range(len(ts)):
-		if (only_sucess and reussite_tab[i]) or only_sucess == False:
+		if (display_only_sucess and reussite_tab[i]) or display_only_sucess == False:
 			t = ts[i]
 			z = zs[i]
 			plt.plot(t, z)
@@ -101,7 +100,7 @@ def plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
 	for i in range(len(ts)):
-		if (only_sucess and reussite_tab[i]) or only_sucess == False:
+		if (display_only_sucess and reussite_tab[i]) or display_only_sucess == False:
 			x = xs[i]
 			y = ys[i]
 			z = zs[i]
@@ -114,6 +113,6 @@ def plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_
 	ax.set_ylim(0, max(longueur_terrain, largeur_terrain))
 	ax.set_zlim(0)
 
-	plt.title("Trajectoire de la balle contre un mur perpendiculaire")
+	plt.title("Trajectoire de la balle")
 
 	plt.show()
