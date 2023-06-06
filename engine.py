@@ -18,7 +18,9 @@ class ComputeTrajectory:
         self.x_tab = []
         self.y_tab = []
         self.z_tab = []
-        self.v_tab = []
+        self.vx = 0
+        self.vy = 0
+        self.vz = 0
 
         self.print_tab = params['print_tab']
         self.print_step = params['print_step']
@@ -28,8 +30,8 @@ class ComputeTrajectory:
         self.h0 = params['h0']
         self.t_max = params['t_max']
         self.v0_norme = params['v0_norme']
+        self.phi = params['phi']
         self.theta = params['theta']
-        self.alpha = params['alpha']
         self.largeur_terrain = params['largeur_terrain']
         self.longueur_terrain = params['longueur_terrain']
         self.hauteur_mur1 = params['hauteur_mur1']
@@ -38,11 +40,6 @@ class ComputeTrajectory:
         self.hauteur_filet = params['hauteur_filet']
         self.e1 = params['e1']
         self.e2 = params['e2']
-
-        self.v0 = [-1, -1, -1]
-        self.v0[0] = self.v0_norme[0] * np.cos(self.theta * np.pi / 180)
-        self.v0[1] = self.v0_norme[1] * np.sin(self.theta * np.pi / 180)
-        self.v0[2] = self.v0_norme[2] * np.cos(self.alpha * np.pi / 180)
 
         self.t_rebond1 = -1
         self.x_rebond1 = -1
@@ -69,24 +66,23 @@ class ComputeTrajectory:
 
     def print_tab_func(self):
         for i in range(len(self.t_tab)):
-            print("t:", self.t_tab[i], "  x:", self.x_tab[i], "  y:", self.y_tab[i], "  z:", self.z_tab[i], "  v:", self.v_tab[i])
+            print("[t:%0.6f" % self.t_tab[i], ", x:%0.6f" % self.x_tab[i], ", y:%0.6f" % self.y_tab[i], ", z:%0.6f" % self.z_tab[i], "]")
+
+
+
+
 
     def part1(self):
-
         t = 0
-        i = 0
-
-        self.x_tab.append(self.x0)
-        self.y_tab.append(self.y0)
-        self.z_tab.append(self.h0)
-        self.t_tab.append(0)
-        self.v_tab.append(self.v0)
-        t = t + self.dt
-
         while True:
-            x = self.v0[0] * t + self.x0
-            y = self.v0[1] * t + self.y0
-            z = self.h0 + self.v0[2] * t - 1/2*self.g * t**2
+            self.vx = self.v0_norme * np.sin(self.theta * np.pi / 180) * np.cos(self.phi * np.pi / 180)
+            self.vy = self.v0_norme * np.sin(self.theta * np.pi / 180) * np.sin(self.phi * np.pi / 180)
+            self.vz = -self.g * t - self.v0_norme * np.cos(self.theta * np.pi / 180)                
+
+            x = self.v0_norme * np.sin(self.theta * np.pi / 180) * np.cos(self.phi * np.pi / 180) * t + self.x0
+            y = self.v0_norme * np.sin(self.theta * np.pi / 180) * np.sin(self.phi * np.pi / 180) * t + self.y0
+            z = -0.5 * self.g * (t**2) - self.v0_norme * np.cos(self.theta * np.pi / 180) * t + self.h0
+
 
             if z >= self.zmax:
                 self.zmax = z
@@ -99,7 +95,7 @@ class ComputeTrajectory:
 
             if x >= self.largeur_terrain or x <= 0:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO DEHOR] La balle sort du terrain par les côtés{bcolors.ENDC}")
+                    print(f"{bcolors.FAIL}[NO DEHORS] La balle sort du terrain par les côtés{bcolors.ENDC}")
                 return False
 
 
@@ -117,7 +113,7 @@ class ComputeTrajectory:
 
             if y >= self.y_mur1:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO DEHOR] La balle passe le mur1 avant le sol{bcolors.ENDC}")
+                    print(f"{bcolors.FAIL}[NO DEHORS] La balle passe le mur1 avant le sol{bcolors.ENDC}")
                 return False
 
 
@@ -133,28 +129,29 @@ class ComputeTrajectory:
             self.y_tab.append(y)
             self.z_tab.append(z)
             self.t_tab.append(t)
-            self.v_tab.append([self.v0[0], self.v0[1], self.v0[2]])
+
             t = t + self.dt
-            i = i + 1
+
+
+
 
     def part2(self):
-        t = self.t_rebond1
 
-        while True:
-            
-            
-            x = self.v0[0] * t + self.x0
-            y = self.v0[1] * t + self.y0
+        t2 = np.linspace(0, self.t_max, 1000)
+        x2 = self.e1 * self.vx * t2 + self.x_tab[-1]
+        y2 = self.e1 * self.vy * t2 + self.y_tab[-1]
+        z2 = -0.5 * self.g * (t2**2) - self.e1 * self.vz * t2
 
-            t_prim = -t + 2 * self.t_rebond1
-            z = self.e1*(self.h0 + self.v0[2] * t_prim - 1/2*self.g * t_prim**2)
+        for i in range(len(t2)):
+            x = x2[i]
+            y = y2[i]
+            z = z2[i]
+            t = self.t_tab[-1]
 
-            if z >= self.zmax:
-                self.zmax = z
 
             if z >= self.z_mur1:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO DEHOR] La balle passe au-dessus du mur1{bcolors.ENDC}")
+                    print(f"{bcolors.FAIL}[NO DEHORS] La balle passe au-dessus du mur1{bcolors.ENDC}")
                 return False
 
             if t > self.t_max:
@@ -162,10 +159,15 @@ class ComputeTrajectory:
                     print(f"{bcolors.FAIL}[NO TEMPS] Temps écoulé{bcolors.ENDC}")
                 return False
 
-            if (x >= self.x_mur2 or x <= 0) and z <= self.z_mur2:
+            if z + 0.001 <= 0:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO DEHOR] La balle frappe le mur2{bcolors.ENDC}")
-                return False                
+                    print(f"{bcolors.FAIL}[NO DEHORS] La balle tombe avant de toucher le mur1{bcolors.ENDC}")
+                return False
+
+            if (x >= self.x_mur2 or x <= 0):
+                if self.print_step:
+                    print(f"{bcolors.FAIL}[NO DEHORS] La balle frappe le mur2{bcolors.ENDC}")
+                return False
 
 
             if y >= self.y_mur1:
@@ -181,21 +183,26 @@ class ComputeTrajectory:
             self.y_tab.append(y)
             self.z_tab.append(z)
             self.t_tab.append(t)
-            self.v_tab.append([self.v0[0], self.v0[1], self.v0[2]])
+
             t = t + self.dt
 
+
+
+
+
     def part3(self):
-        t = self.t_rebond2
 
-        while True:
-            x = self.v0[0] * t + self.x0
-            y = -(self.v0[1] * t + self.y0) + 2*self.y_rebond2
+        t3 = np.linspace(0, self.t_max, 1000)
+        x3 = self.e2 * self.vx * t3 + self.x_tab[-1]
+        y3 = -self.e2 * self.vy * t3 + self.y_tab[-1]
+        z3 = -0.5 * self.g * (t3**2) - self.e2 * self.vz * t3  + self.z_tab[-1]
 
-            t_prim = -t + 2 * self.t_rebond1
-            z = self.e2*(self.h0 + self.v0[2] * t_prim - 1/2*self.g * t_prim**2)
+        for i in range(len(t3)):
+            x = x3[i]
+            y = y3[i]
+            z = z3[i]
+            t = self.t_tab[-1]
 
-            if z >= self.zmax:
-                self.zmax = z
 
             if t > self.t_max:
                 if self.print_step:
@@ -204,17 +211,17 @@ class ComputeTrajectory:
 
             if z <= 0:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO DEHOR] La balle tombe avant de passer le mur2{bcolors.ENDC}")
+                    print(f"{bcolors.FAIL}[NO DEHORS] La balle tombe avant de passer le mur2{bcolors.ENDC}")
                 return False
 
             if y <= 0:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO DEHOR] La balle passe derrière le mur derrière nous{bcolors.ENDC}")
+                    print(f"{bcolors.FAIL}[NO DEHORS] La balle passe derrière le mur derrière nous{bcolors.ENDC}")
                 return False
 
             if (x >= self.x_mur2 or x <= 0) and z <= self.z_mur2:
                 if self.print_step:
-                    print(f"{bcolors.FAIL}[NO DEHOR] La balle frappe le mur2{bcolors.ENDC}")
+                    print(f"{bcolors.FAIL}[NO DEHORS] La balle frappe le mur2{bcolors.ENDC}")
                 return False                
 
             if (x >= self.x_mur2 or x <= 0) and z >= self.z_mur2:
@@ -227,8 +234,7 @@ class ComputeTrajectory:
             self.y_tab.append(y)
             self.z_tab.append(z)
             self.t_tab.append(t)
-            self.v_tab.append([self.v0[0], self.v0[1], self.v0[2]])
-            t = t + self.dt
+
 
     def compute_trajectory(self):
         if self.y0 >= self.longueur_terrain // 2 and self.print_step:
@@ -236,7 +242,7 @@ class ComputeTrajectory:
             return False
 
         if self.part1() and self.part2() and self.part3():
-            #print(f"{bcolors.OKGREEN}[OK] x:{self.params['x0']} y:{self.params['y0']} alpha:{self.params['alpha']:05.3f} theta:{self.params['theta']:05.3f}{bcolors.ENDC}")
+            #print(f"{bcolors.OKGREEN}[OK] x:{self.params['x0']} y:{self.params['y0']} theta:{self.params['theta']:05.3f} phi:{self.params['phi']:05.3f}{bcolors.ENDC}")
             return True
         else:
             return False
@@ -244,7 +250,7 @@ class ComputeTrajectory:
     def get_trajectory(self):
         if self.print_tab == True:
             self.print_tab_func()
-        return self.t_tab, self.x_tab, self.y_tab, self.z_tab, self.v_tab
+        return self.t_tab, self.x_tab, self.y_tab, self.z_tab
 
 
 
@@ -264,8 +270,8 @@ params = {
     'hauteur_mur1': 3,
     'hauteur_mur2': 2,
 
-    'alpha': 90,
-    'theta': 80,
+    'theta': 90,
+    'phi': 80,
     
     'x0': 2,
     'y0': 2,

@@ -2,52 +2,73 @@ from engine import ComputeTrajectory, bcolors
 import matplotlib.pyplot as plt
 import random
 from ploting import compute_multiple_trajectories, plot
+import numpy as np
 
 
 largeur_terrain = 10
 longueur_terrain = 20
 
-def generate_random_params(num_params):
+def get_params_tab(x, y, h0, v0):   
     params_tab = []
 
-    for _ in range(num_params):
-        params = {
-            't_max': 8,
-            'print_tab': False,
-            'print_step': True,
-            'largeur_terrain': largeur_terrain,
-            'longueur_terrain': longueur_terrain,
-            'hauteur_filet': 0.9,
-            'e1': 0.7,
-            'e2': 0.7,
-            'hauteur_mur1': 3,
-            'hauteur_mur2': 2,
+    thetas = np.linspace(40, 160, nb_thetas)
+    phis = np.linspace(0, 180, nb_phis)
 
-            'alpha': 122.105,
-            'theta': 85.263,
-            
-            'x0': 9,
-            'y0': 9,
-            'h0': 2.3,
+    for theta in thetas:
+        for phi in phis:
+            params = {
+                't_max': 10,
+                'print_tab': False,
+                'print_step': True,
+                'largeur_terrain': largeur_terrain,
+                'longueur_terrain': longueur_terrain,
+                'hauteur_filet': 0.9,
+                'e1': 0.4,
+                'e2': 0.8,
+                'hauteur_mur1': 4,
+                'hauteur_mur2': 2,
 
-            'v0_norme': [13, 13, 13],
-        }
+                'theta': theta,
+                'phi': phi,
+                
+                'x0': x,
+                'y0': y,
+                'h0': h0,
 
-        params_tab.append(params)
+                'v0_norme': v0,
+            }
+
+            params_tab.append(params)
 
     return params_tab
 
 
+nb_thetas = 96
+nb_phis = 96
 
-num_params = 1
+h0 = 2.3
+v0 = 40
+params_tab = get_params_tab(2, 5, h0, v0)
 
-params_tab = generate_random_params(num_params)
-ts, xs, ys, zs, vs, reussite_tab, color_tab = compute_multiple_trajectories(params_tab)
 
-if num_params > 75:
-    ploting = False
-else:
-    ploting = True
+ts = []
+xs = []
+ys = []
+zs = []
+reussite_tab = []
+print(f"{bcolors.HEADER}{bcolors.BOLD}v0 = {v0} ms{bcolors.ENDC}")
+
+for param in params_tab:
+
+    trajectory = ComputeTrajectory(param)
+    reussite = trajectory.compute_trajectory()
+
+    t, x, y, z = trajectory.get_trajectory()
+    ts.append(t)
+    xs.append(x)
+    ys.append(y)
+    zs.append(z)
+    reussite_tab.append(reussite)
 
 # Pourcentages
 ok = 0
@@ -55,8 +76,7 @@ no = 0
 for i in range(len(reussite_tab)):
     if reussite_tab[i] == True:
         ok = ok + 1
-        if ploting:
-            print(f"#{i}", end=" ")
+        print(f"#{i}", end=" ")
     else:
         no = no + 1
 print(" ")
@@ -67,5 +87,4 @@ else:
 print(f"{bcolors.FAIL}Pourcentage d'échec     : {no/(ok+no)*100:05.2f}% ({no}/{(ok+no)}){bcolors.ENDC}")
 
 # Courbes
-if ploting:
-    plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_terrain, False)
+plot(ts, xs, ys, zs, reussite_tab, largeur_terrain, longueur_terrain, True)

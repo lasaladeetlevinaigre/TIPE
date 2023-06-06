@@ -26,11 +26,11 @@ longueur_terrain = 20 #m
 def get_params_tab(x, y):   
     params_tab = []
 
-    alphas = np.linspace(40, 160, nb_alphas)
-    thetas = np.linspace(0, 180, nb_thetas)
+    thetas = np.linspace(40, 160, nb_thetas)
+    phis = np.linspace(0, 180, nb_phis)
 
-    for alpha in alphas:
-        for theta in thetas:
+    for theta in thetas:
+        for phi in phis:
             params = {
                 't_max': 10,
                 'print_tab': False,
@@ -43,8 +43,8 @@ def get_params_tab(x, y):
                 'hauteur_mur1': 3,
                 'hauteur_mur2': 2,
 
-                'alpha': alpha,
                 'theta': theta,
+                'phi': phi,
                 
                 'x0': x,
                 'y0': y,
@@ -114,8 +114,8 @@ def get_probability(x, y):
 
 
 pas = 1  # Pas entre chaque mesure
-nb_alphas = 6
 nb_thetas = 6
+nb_phis = 6
 
 nb_rays_succ = 0
 def generating_heatmap(v0, h0):
@@ -128,7 +128,7 @@ def generating_heatmap(v0, h0):
         for y in range(longueur_terrain):
             probabilites[x][y] = get_probability(x, y)
 
-    nb_rays = nb_alphas * nb_thetas * int(largeur_terrain/pas) * int(longueur_terrain/pas)
+    nb_rays = nb_thetas * nb_phis * int(largeur_terrain/pas) * int(longueur_terrain/pas)
     print(f"{bcolors.OKCYAN}Résultats pour [v0:{v0}, h0:{h0}]{bcolors.ENDC}")
     print(f"{bcolors.OKCYAN}Nombre de lancés : {nb_rays} dont {nb_rays_succ} succès{bcolors.ENDC}")
 

@@ -25,14 +25,15 @@ longueur_terrain = 20 #m
 
 
 
+
 def get_params_tab(x, y):   
     params_tab = []
 
-    alphas = np.linspace(40, 160, nb_alphas)
     thetas = np.linspace(0, 180, nb_thetas)
+    phis = np.linspace(0, 180, nb_phis)
 
-    for alpha in alphas:
-        for theta in thetas:
+    for theta in thetas:
+        for phi in phis:
             params = {
                 't_max': 10,
                 'print_tab': False,
@@ -40,19 +41,19 @@ def get_params_tab(x, y):
                 'largeur_terrain': largeur_terrain,
                 'longueur_terrain': longueur_terrain,
                 'hauteur_filet': 0.9,
-                'e1': 0.7,
-                'e2': 0.7,
+                'e1': 0.4,
+                'e2': 0.8,
                 'hauteur_mur1': 4,
-                'hauteur_mur2': 3,
+                'hauteur_mur2': 2,
 
-                'alpha': alpha,
                 'theta': theta,
+                'phi': phi,
                 
                 'x0': x,
                 'y0': y,
                 'h0': h0,
 
-                'v0_norme': [v0, v0, v0],
+                'v0_norme': v0,
             }
 
             params_tab.append(params)
@@ -61,7 +62,6 @@ def get_params_tab(x, y):
 
 
 
-# --------------------
 global ts
 ts = []
 global xs
@@ -72,30 +72,23 @@ global zs
 zs = []
 global vs
 vs = []
-global reussite_tab
-reussite_tab = []
 color_tab = []
-# --------------------
+reussite_tab = []
+
+
 
 def compute_single_trajectory(param, i):
     trajectory = ComputeTrajectory(param)
     reussite = trajectory.compute_trajectory()
 
     if(False):
-        # --------------------
-        t, x, y, z, v = trajectory.get_trajectory()
+        t, x, y, z = trajectory.get_trajectory()
         ts.append(t)
         xs.append(x)
         ys.append(y)
         zs.append(z)
-        vs.append(v)
         reussite_tab.append(reussite)
-        # --------------------
-
-
     return reussite
-
-
 
 
 def get_probability(x, y):
@@ -110,23 +103,31 @@ def get_probability(x, y):
             somme = somme + 1
         i = i + 1
     proba = somme/i
-
     #print(f"[{x:.2f}, {y:.2f}]: {proba:.4f}")
     return proba
 
 
 
 
+# ~ 1min pour 500k lancés
+# ~ 10sec pour 20k
 
 pas = 1  # Pas entre chaque mesure
-nb_alphas = 24
-nb_thetas = 24
+nb_thetas = 10
+nb_phis = 10
+print(f"{int(largeur_terrain*longueur_terrain*1/pas*nb_thetas*nb_phis)}l")
 
 nb_rays_succ = 0
 def generating_heatmap(v0, h0, save = False, dossier_sortie = False):
     st = time.time()
     global nb_rays_succ
+
+    print("-"*35)
+
+    print(f"{bcolors.HEADER}{bcolors.BOLD}v0 = {v0} ms{bcolors.ENDC}")
     nb_rays_succ = 0
+
+    
     heat = np.zeros((longueur_terrain +1, largeur_terrain +1))
 
     for y in range(len(heat)):
@@ -134,26 +135,27 @@ def generating_heatmap(v0, h0, save = False, dossier_sortie = False):
             if(y < longueur_terrain/2):
                 heat[y][x] = get_probability(x, y)
 
+    et = time.time()
+    elapsed_time = et - st
+    print(f"Calcul en {(elapsed_time):.3f}s")
+
     moyenne = np.mean(heat)
 
     plt.figure(figsize=(4.5, 6))
-    plt.imshow(heat, cmap='hot', origin='lower', interpolation='none')
+    plt.imshow(heat, cmap='hot', origin='lower', interpolation='bicubic')
     plt.colorbar()
     plt.xlabel('Largeur')
     plt.ylabel('Longueur')
     plt.title(f'Heatmap des probabilités pour {v0:.1f}m/s')
 
-    print("-"*35)
-    print(f"{bcolors.HEADER}{bcolors.BOLD}v0 = {v0} ms{bcolors.ENDC}")
 
-    nb_rays_tot = nb_alphas*nb_thetas*longueur_terrain*largeur_terrain
+    nb_rays_tot = nb_thetas*nb_phis*longueur_terrain*largeur_terrain
     print(f"{bcolors.OKCYAN}{nb_rays_succ} lancés réussis sur {nb_rays_tot}{bcolors.ENDC}")
 
     print(f"Probabilité moyenne: {bcolors.BOLD}{moyenne:.8f}{bcolors.ENDC}")
 
-    et = time.time()
-    elapsed_time = et - st
-    print(f"Calcul en {(elapsed_time):.3f}s")
+
+    print("-"*35)
 
     #Enregistrement du fichier
     if save:
@@ -162,15 +164,14 @@ def generating_heatmap(v0, h0, save = False, dossier_sortie = False):
         plt.savefig(chemin_fichier)
     else:
         plt.show()
-
-        #plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_terrain)
-
-
-v0 = 50 #en m/s
-h0 = 2.4 #en m
-#generating_heatmap(v0, h0)
+        #plot(ts, xs, ys, zs, reussite_tab, color_tab, largeur_terrain, longueur_terrain)
 
 
+v0 = 40 #en m/s
+h0 = 2.1 #en m
+generating_heatmap(v0, h0)
+
+"""
 v0_tab = np.arange(2, 70+2, 2)
 print(f"{bcolors.FAIL}Calcul de {len(v0_tab)} heatmaps{bcolors.ENDC} pour h0={h0}")
 
@@ -179,3 +180,4 @@ os.makedirs(dossier_sortie, exist_ok=True)
 for v0 in v0_tab:
     plt.clf()
     generating_heatmap(v0, h0, True, dossier_sortie)
+"""

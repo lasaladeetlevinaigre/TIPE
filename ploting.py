@@ -19,7 +19,6 @@ def compute_multiple_trajectories(params_tab):
 	xs = []
 	ys = []
 	zs = []
-	vs = []
 	reussite_tab = []
 	color_tab = []
 
@@ -30,12 +29,11 @@ def compute_multiple_trajectories(params_tab):
 
 		trajectory = ComputeTrajectory(params)
 		reussite = trajectory.compute_trajectory()
-		t, x, y, z, v = trajectory.get_trajectory()
+		t, x, y, z = trajectory.get_trajectory()
 		ts.append(t)
 		xs.append(x)
 		ys.append(y)
 		zs.append(z)
-		vs.append(v)
 
 		if reussite:
 			clr = generate_random_hex_color(1)
@@ -51,13 +49,13 @@ def compute_multiple_trajectories(params_tab):
 
 		i = i + 1
 
-	return ts, xs, ys, zs, vs, reussite_tab, color_tab
+	return ts, xs, ys, zs, reussite_tab, color_tab
 
 
 
 
 
-def plot(ts, xs, ys, zs, vs, reussite_tab, color_tab, largeur_terrain, longueur_terrain, display_only_sucess = True):
+def plot(ts, xs, ys, zs, reussite_tab, color_tab, largeur_terrain, longueur_terrain, display_only_sucess = True):
 	fig = plt.figure(figsize=(14, 4))
 	# Graphe des coordonnées x
 	plt.subplot(131)
