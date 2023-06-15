@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 
 class bcolors:
     HEADER = '\033[95m'
@@ -14,10 +15,10 @@ class bcolors:
 class ComputeTrajectory:
     def __init__(self, params):
         self.params = params
-        self.t_tab = []
-        self.x_tab = []
-        self.y_tab = []
-        self.z_tab = []
+        self.t_tab  = 0
+        self.xlast = 0
+        self.ylast = 0
+        self.zlast = 0
         self.vx = 0
         self.vy = 0
         self.vz = 0
@@ -62,7 +63,7 @@ class ComputeTrajectory:
         self.x_mur2 = self.largeur_terrain
         self.z_mur2 = self.hauteur_mur2
 
-        self.dt = 0.01
+        self.dt = 0.005
 
     def print_tab_func(self):
         for i in range(len(self.t_tab)):
@@ -124,16 +125,16 @@ class ComputeTrajectory:
                 self.x_rebond1 = x
                 self.y_rebond1 = y
 
-                self.x_tab.append(x)
-                self.y_tab.append(y)
-                self.z_tab.append(0)
-                self.t_tab.append(t)
+                self.xlast = x
+                self.ylast = y
+                self.zlast = 0
+                self.tlast = t
                 return True
 
-            self.x_tab.append(x)
-            self.y_tab.append(y)
-            self.z_tab.append(z)
-            self.t_tab.append(t)
+            self.xlast = x
+            self.ylast = y
+            self.zlast = z
+            self.tlast = t
 
             t = t + self.dt
 
@@ -143,15 +144,15 @@ class ComputeTrajectory:
     def part2(self):
 
         t2 = np.linspace(0, self.t_max, 1000)
-        x2 = self.e1 * self.vx * t2 + self.x_tab[-1]
-        y2 = self.e1 * self.vy * t2 + self.y_tab[-1]
+        x2 = self.e1 * self.vx * t2 + self.xlast
+        y2 = self.e1 * self.vy * t2 + self.ylast
         z2 = -0.5 * self.g * (t2**2) - self.e1 * self.vz * t2
 
         for i in range(len(t2)):
             x = x2[i]
             y = y2[i]
             z = z2[i]
-            t = self.t_tab[-1]
+            t = self.tlast
 
 
             if z >= self.z_mur1:
@@ -184,10 +185,10 @@ class ComputeTrajectory:
                 self.z_rebond2 = z
                 return True
 
-            self.x_tab.append(x)
-            self.y_tab.append(y)
-            self.z_tab.append(z)
-            self.t_tab.append(t)
+            self.xlast = x
+            self.ylast = y
+            self.zlast = z
+            self.tlast = t
 
             t = t + self.dt
 
@@ -198,15 +199,15 @@ class ComputeTrajectory:
     def part3(self):
 
         t3 = np.linspace(0, self.t_max, 1000)
-        x3 = self.e2 * self.vx * t3 + self.x_tab[-1]
-        y3 = -self.e2 * self.vy * t3 + self.y_tab[-1]
-        z3 = -0.5 * self.g * (t3**2) - self.e2 * self.vz * t3  + self.z_tab[-1]
+        x3 = self.e2 * self.vx * t3 + self.xlast
+        y3 = -self.e2 * self.vy * t3 + self.ylast
+        z3 = -0.5 * self.g * (t3**2) - self.e2 * self.vz * t3  + self.zlast
 
         for i in range(len(t3)):
             x = x3[i]
             y = y3[i]
             z = z3[i]
-            t = self.t_tab[-1]
+            t = self.tlast
 
 
             if t > self.t_max:
@@ -235,10 +236,10 @@ class ComputeTrajectory:
                     print(f"{bcolors.OKGREEN}[OK] Réussite !{bcolors.ENDC}")
                 return True
 
-            self.x_tab.append(x)
-            self.y_tab.append(y)
-            self.z_tab.append(z)
-            self.t_tab.append(t)
+            self.xlast = x
+            self.ylast = y
+            self.zlast = z
+            self.tlast = t
 
 
     def compute_trajectory(self):
@@ -253,6 +254,7 @@ class ComputeTrajectory:
             return False
 
     def get_trajectory(self):
+        sys.end()
         if self.print_tab == True:
             self.print_tab_func()
         return self.t_tab, self.x_tab, self.y_tab, self.z_tab

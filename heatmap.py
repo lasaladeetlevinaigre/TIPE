@@ -61,33 +61,10 @@ def get_params_tab(x, y):
     return params_tab
 
 
-
-global ts
-ts = []
-global xs
-xs = []
-global ys
-ys = []
-global zs
-zs = []
-global vs
-vs = []
-color_tab = []
-reussite_tab = []
-
-
-
 def compute_single_trajectory(param, i):
     trajectory = ComputeTrajectory(param)
     reussite = trajectory.compute_trajectory()
 
-    if(False):
-        t, x, y, z = trajectory.get_trajectory()
-        ts.append(t)
-        xs.append(x)
-        ys.append(y)
-        zs.append(z)
-        reussite_tab.append(reussite)
     return reussite
 
 
@@ -112,9 +89,9 @@ def get_probability(x, y):
 # ~ 1min pour 500k lancés
 # ~ 10sec pour 20k
 
-pas = 1  # Pas entre chaque mesure
-nb_thetas = 10
-nb_phis = 10
+pas = 1 # Pas entre chaque mesure
+nb_thetas = 20
+nb_phis = 20
 print(f"{int(largeur_terrain*longueur_terrain*1/pas*nb_thetas*nb_phis)}l")
 
 nb_rays_succ = 0
@@ -169,10 +146,9 @@ def generating_heatmap(v0, h0, save = False, dossier_sortie = False):
 
 v0 = 40 #en m/s
 h0 = 2.1 #en m
-generating_heatmap(v0, h0)
+#generating_heatmap(v0, h0)
 
-"""
-v0_tab = np.arange(2, 70+2, 2)
+v0_tab = np.arange(1, 111, 1)
 print(f"{bcolors.FAIL}Calcul de {len(v0_tab)} heatmaps{bcolors.ENDC} pour h0={h0}")
 
 dossier_sortie = f"heatmaps/{int(time.time()%10e7)}"
@@ -180,4 +156,3 @@ os.makedirs(dossier_sortie, exist_ok=True)
 for v0 in v0_tab:
     plt.clf()
     generating_heatmap(v0, h0, True, dossier_sortie)
-"""
