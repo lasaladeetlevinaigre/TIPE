@@ -144,10 +144,12 @@ def generating_heatmap(v0, h0, save = False, dossier_sortie = False):
         #plot(ts, xs, ys, zs, reussite_tab, color_tab, largeur_terrain, longueur_terrain)
 
 
-v0 = 40 #en m/s
+v0 = 69 #en m/s
 h0 = 2.1 #en m
-#generating_heatmap(v0, h0)
+generating_heatmap(v0, h0)
 
+
+"""
 v0_tab = np.arange(1, 111, 1)
 print(f"{bcolors.FAIL}Calcul de {len(v0_tab)} heatmaps{bcolors.ENDC} pour h0={h0}")
 
@@ -156,3 +158,4 @@ os.makedirs(dossier_sortie, exist_ok=True)
 for v0 in v0_tab:
     plt.clf()
     generating_heatmap(v0, h0, True, dossier_sortie)
+"""

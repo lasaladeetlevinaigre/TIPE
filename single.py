@@ -8,47 +8,31 @@ import time
 largeur_terrain = 10
 longueur_terrain = 20
 
-def get_params_tab(x, y, h0, v0):   
-    params_tab = []
-
-    thetas = np.linspace(0, 180, nb_thetas)
-    phis = np.linspace(0, 180, nb_phis)
-
-    for theta in thetas:
-        for phi in phis:
-            params = {
-                't_max': 10,
-                'print_tab': False,
-                'print_step': False,
-                'largeur_terrain': largeur_terrain,
-                'longueur_terrain': longueur_terrain,
-                'hauteur_filet': 0.9,
-                'e1': 0.24,
-                'e2': 0.8,
-                'hauteur_mur1': 3,
-                'hauteur_mur2': 2,
-
-                'theta': theta,
-                'phi': phi,
-                
-                'x0': x,
-                'y0': y,
-                'h0': h0,
-
-                'v0_norme': v0,
-            }
-
-            params_tab.append(params)
-
-    return params_tab
-
-
-nb_thetas = 10
-nb_phis = 10
-
 h0 = 2.3
 v0 = 70
-params_tab = get_params_tab(4, 8, h0, v0)
+params_tab = [
+    {
+        't_max': 10,
+        'print_tab': False,
+        'print_step': True,
+        'largeur_terrain': largeur_terrain,
+        'longueur_terrain': longueur_terrain,
+        'hauteur_filet': 0.9,
+        'e1': 0.24,
+        'e2': 0.8,
+        'hauteur_mur1': 3,
+        'hauteur_mur2': 2,
+
+        'theta': 75,
+        'phi': 65,
+        
+        'x0': 1,
+        'y0': 6,
+        'h0': h0,
+
+        'v0_norme': v0,
+    }
+]
 
 
 ts = []

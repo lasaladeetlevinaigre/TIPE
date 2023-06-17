@@ -44,6 +44,7 @@ class ComputeTrajectory:
         self.t_rebond1 = -1
         self.x_rebond1 = -1
         self.y_rebond1 = -1
+        self.z_rebond1 = -1
 
         self.t_rebond2 = -1
         self.x_rebond2 = -1
@@ -62,7 +63,7 @@ class ComputeTrajectory:
         self.x_mur2 = self.largeur_terrain
         self.z_mur2 = self.hauteur_mur2
 
-        self.dt = 0.01
+        self.dt = 0.0001
 
     def print_tab_func(self):
         for i in range(len(self.t_tab)):
@@ -83,6 +84,8 @@ class ComputeTrajectory:
             y = self.v0_norme * np.sin(self.theta * np.pi / 180) * np.sin(self.phi * np.pi / 180) * t + self.y0
             z = -0.5 * self.g * (t**2) - self.v0_norme * np.cos(self.theta * np.pi / 180) * t + self.h0
 
+            #if (x-self.x0)**2 + (y-self.y0-1.8)**2 + (z-self.h0)**2 > 3**2:
+            #    return False
 
             if z >= self.zmax:
                 self.zmax = z
@@ -123,10 +126,11 @@ class ComputeTrajectory:
                 self.t_rebond1 = t
                 self.x_rebond1 = x
                 self.y_rebond1 = y
+                self.z_rebond1 = z
 
                 self.x_tab.append(x)
                 self.y_tab.append(y)
-                self.z_tab.append(0)
+                self.z_tab.append(z)
                 self.t_tab.append(t)
                 return True
 
@@ -139,19 +143,12 @@ class ComputeTrajectory:
 
 
 
-
     def part2(self):
-
-        t2 = np.linspace(0, self.t_max, 1000)
-        x2 = self.e1 * self.vx * t2 + self.x_tab[-1]
-        y2 = self.e1 * self.vy * t2 + self.y_tab[-1]
-        z2 = -0.5 * self.g * (t2**2) - self.e1 * self.vz * t2
-
-        for i in range(len(t2)):
-            x = x2[i]
-            y = y2[i]
-            z = z2[i]
-            t = self.t_tab[-1]
+        t = 0
+        while True:
+            x = self.e1 * self.vx * t + self.x_rebond1
+            y = self.e1 * self.vy * t + self.y_rebond1
+            z = -0.5 * self.g * (t**2) - self.e1 * self.vz * t
 
 
             if z >= self.z_mur1:
@@ -164,21 +161,20 @@ class ComputeTrajectory:
                     print(f"{bcolors.FAIL}[NO TEMPS] Temps écoulé{bcolors.ENDC}")
                 return False
 
-            if z + 0.001 <= 0:
+            if z < 0:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO DEHORS] La balle tombe avant de toucher le mur1{bcolors.ENDC}")
                 return False
 
-            if (x >= self.x_mur2 or x <= 0):
+            if x >= self.x_mur2 or x <= 0:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO DEHORS] La balle frappe le mur2{bcolors.ENDC}")
                 return False
 
-
             if y >= self.y_mur1:
                 if self.print_step:
                     print("[RB] Deuxième rebond contre mur1 à %0.4f" % t, "sec (z:%0.4f" % z, "m)")
-                self.t_rebond2 = t
+                self.t_rebond2 = t + self.t_rebond1
                 self.x_rebond2 = x
                 self.y_rebond2 = y
                 self.z_rebond2 = z
@@ -187,58 +183,53 @@ class ComputeTrajectory:
             self.x_tab.append(x)
             self.y_tab.append(y)
             self.z_tab.append(z)
-            self.t_tab.append(t)
+            self.t_tab.append(t + self.t_rebond1)
 
             t = t + self.dt
 
 
-
-
-
     def part3(self):
-
-        t3 = np.linspace(0, self.t_max, 1000)
-        x3 = self.e2 * self.vx * t3 + self.x_tab[-1]
-        y3 = -self.e2 * self.vy * t3 + self.y_tab[-1]
-        z3 = -0.5 * self.g * (t3**2) - self.e2 * self.vz * t3  + self.z_tab[-1]
-
-        for i in range(len(t3)):
-            x = x3[i]
-            y = y3[i]
-            z = z3[i]
-            t = self.t_tab[-1]
-
+        t = 0
+        f = False
+        while not f and t < self.t_max:
+            x = self.e2 * self.vx * t + self.x_rebond2
+            y = -self.e2 * self.vy * t + self.y_rebond2
+            z = -0.5 * self.g * (t**2) - self.e2 * self.vz * t + self.z_rebond2
 
             if t > self.t_max:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO TEMPS] Temps écoulé{bcolors.ENDC}")
-                return False
+                return f
 
-            if z <= 0:
+            if z < 0:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO DEHORS] La balle tombe avant de passer le mur2{bcolors.ENDC}")
-                return False
+                return f
 
-            if y <= 0:
+            if y < 0:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO DEHORS] La balle passe derrière le mur derrière nous{bcolors.ENDC}")
-                return False
+                return f
 
-            if (x >= self.x_mur2 or x <= 0) and z <= self.z_mur2:
+            if (x > self.x_mur2 or x < 0) and z < self.z_mur2:
                 if self.print_step:
                     print(f"{bcolors.FAIL}[NO DEHORS] La balle frappe le mur2{bcolors.ENDC}")
-                return False                
+                return f                
 
-            if (x >= self.x_mur2 or x <= 0) and z >= self.z_mur2:
+            if (x > self.x_mur2 or x < 0) and z > self.z_mur2:
                 if self.print_step:
                     print("[RB] Passe au-dessus mur2 à %0.4f" % t, "sec")
                     print(f"{bcolors.OKGREEN}[OK] Réussite !{bcolors.ENDC}")
-                return True
+                f = True
+                return f
 
             self.x_tab.append(x)
             self.y_tab.append(y)
             self.z_tab.append(z)
-            self.t_tab.append(t)
+            self.t_tab.append(t + self.t_rebond2)
+            t += self.dt
+
+
 
 
     def compute_trajectory(self):

@@ -1,42 +1,31 @@
-def part1():
-        t = 0
-        rebond = False
-        while not rebond and t < t_max:
-            # Calcul des vecteurs vitesse
-            vx = v0_norme * np.sin(theta) * np.cos(phi)
-            vy = v0_norme * np.sin(theta) * np.sin(phi)
-            vz = -g * t - v0_norme * np.cos(theta)                
+import numpy as np
+import matplotlib.pyplot as plt
 
-            # Calcul des coordonnées
-            x = v0_norme * np.sin(theta) * np.cos(phi) * t + x0
-            y = v0_norme * np.sin(theta) * np.sin(phi) * t + y0
-            z = -0.5 * g * (t**2) - v0_norme * np.cos(theta) * t + h0
+# Dimensions du terrain
+largeur_terrain = 10
+longueur_terrain = 20
 
-            # [FAIL] La balle sort du terrain par les côtés
-            if x >= largeur_terrain or x <= 0:
-                return False
+# Créer un tableau 2D de dimensions largeur_terrain x longueur_terrain rempli de zéros
+terrain = np.zeros((largeur_terrain, longueur_terrain))
 
-            # [FAIL] La balle touche le sol devant le filet
-            if z <= 0 and y <= y_filet:
-                return False
+# Définir la fonction get_probability(x, y) qui retourne la probabilité de succès en fonction de x et y
+def get_probability(x, y):
+    # Vérifier si la position en longueur est dans le carré adverse
+    if y >= longueur_terrain // 2:
+        return 0.0  # Retourner 0 si dans le carré adverse
+    
+    # Calculer la probabilité en fonction de x et y
+    return x / largeur_terrain + y / longueur_terrain
 
-            # [FAIL] La balle tape dans le filet
-            if abs(y - y_filet) <= 0.1 and z <= hauteur_filet:
-                return False
+# Parcourir chaque position du terrain et remplir le tableau en utilisant get_probability(x, y)
+for x in range(largeur_terrain):
+    for y in range(longueur_terrain):
+        terrain[x][y] = get_probability(x, y)
 
-            # [FAIL] La balle passe le mur1 avant le sol
-            if y >= y_mur1:
-                return False
-
-            # La balle frappe le sol dans la bonne zone
-            if z <= 0:
-                x_rebond1, y_rebond1, z_rebond1 = x, y, z
-                rebond = True
-
-            x_tab.append(x)
-            y_tab.append(y)
-            z_tab.append(z)
-            t_tab.append(t)
-
-            t = t + dt
-        return rebond
+# Afficher le terrain sous forme de heatmap
+plt.imshow(terrain, cmap='hot', origin='lower')
+plt.colorbar()
+plt.xlabel('Longueur')
+plt.ylabel('Largeur')
+plt.title('Heatmap des probabilités')
+plt.show()

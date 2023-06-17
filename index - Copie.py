@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import random
 from ploting import compute_multiple_trajectories, plot
 import numpy as np
-import time
+
 
 largeur_terrain = 10
 longueur_terrain = 20
@@ -11,7 +11,7 @@ longueur_terrain = 20
 def get_params_tab(x, y, h0, v0):   
     params_tab = []
 
-    thetas = np.linspace(0, 180, nb_thetas)
+    thetas = np.linspace(40, 160, nb_thetas)
     phis = np.linspace(0, 180, nb_phis)
 
     for theta in thetas:
@@ -23,9 +23,9 @@ def get_params_tab(x, y, h0, v0):
                 'largeur_terrain': largeur_terrain,
                 'longueur_terrain': longueur_terrain,
                 'hauteur_filet': 0.9,
-                'e1': 0.24,
+                'e1': 0.4,
                 'e2': 0.8,
-                'hauteur_mur1': 3,
+                'hauteur_mur1': 4,
                 'hauteur_mur2': 2,
 
                 'theta': theta,
@@ -43,12 +43,12 @@ def get_params_tab(x, y, h0, v0):
     return params_tab
 
 
-nb_thetas = 10
-nb_phis = 10
+nb_thetas = 96
+nb_phis = 96
 
 h0 = 2.3
-v0 = 70
-params_tab = get_params_tab(4, 8, h0, v0)
+v0 = 40
+params_tab = get_params_tab(2, 5, h0, v0)
 
 
 ts = []
@@ -58,20 +58,16 @@ zs = []
 reussite_tab = []
 print(f"{bcolors.HEADER}{bcolors.BOLD}v0 = {v0} ms{bcolors.ENDC}")
 
-st = time.time()
-
 for param in params_tab:
 
     trajectory = ComputeTrajectory(param)
     reussite = trajectory.compute_trajectory()
-    t, x, y, z = trajectory.get_trajectory()
 
+    t, x, y, z = trajectory.get_trajectory()
     ts.append(t)
     xs.append(x)
     ys.append(y)
     zs.append(z)
-
-
     reussite_tab.append(reussite)
 
 # Pourcentages
@@ -80,18 +76,15 @@ no = 0
 for i in range(len(reussite_tab)):
     if reussite_tab[i] == True:
         ok = ok + 1
+        print(f"#{i}", end=" ")
     else:
         no = no + 1
 print(" ")
-
 if ok == 0:
     print(f"{bcolors.OKCYAN}Pourcentage de réussite : {ok/(ok+no)*100:06.2f}% ({ok}/{(ok+no)}){bcolors.ENDC}")
 else:
     print(f"{bcolors.OKCYAN}Pourcentage de réussite : {ok/(ok+no)*100:05.2f}% ({ok}/{(ok+no)}){bcolors.ENDC}")
 print(f"{bcolors.FAIL}Pourcentage d'échec     : {no/(ok+no)*100:05.2f}% ({no}/{(ok+no)}){bcolors.ENDC}")
 
-et = time.time()
-elapsed_time = et - st
-print(f"Calcul en {(elapsed_time):.3f}s")   
 # Courbes
-plot(v0, ts, xs, ys, zs, reussite_tab, largeur_terrain, longueur_terrain, False)
+plot(ts, xs, ys, zs, reussite_tab, largeur_terrain, longueur_terrain, True)
